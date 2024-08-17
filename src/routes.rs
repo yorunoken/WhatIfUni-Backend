@@ -6,11 +6,13 @@ use crate::api::{get_ayt, get_tyt};
 pub fn routes(pool: SqlitePool) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let get_tyt = warp::path!("api" / "tyt")
         .and(warp::get())
+        .and(warp::query::<std::collections::HashMap<String, String>>())
         .and(with_db(pool.clone()))
         .and_then(get_tyt);
 
     let get_ayt = warp::path!("api" / "ayt" / String)
         .and(warp::get())
+        .and(warp::query::<std::collections::HashMap<String, String>>())
         .and(with_db(pool.clone()))
         .and_then(get_ayt);
 
