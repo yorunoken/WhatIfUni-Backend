@@ -20,10 +20,10 @@ Needs a `data.db` database with five tables;
     	"student_quota_2023"	TEXT,
     	"student_status_2024"	TEXT,
     	"student_status_2023"	TEXT,
-    	"base_score_2024"	REAL,
-    	"base_score_2023"	REAL,
-    	"tbs_2024"	INTEGER,
-    	"tbs_2023"	INTEGER
+    	"base_score_2024"	TEXT,
+    	"base_score_2023"	TEXT,
+    	"tbs_2024"	TEXT,
+    	"tbs_2023"	TEXT
         );
     ```
 
@@ -44,17 +44,17 @@ Needs a `data.db` database with five tables;
     	"student_quota_2022"	TEXT,
     	"student_quota_2021"	TEXT,
     	"fullness_status"	TEXT,
-    	"enrolled_2024"	INTEGER,
-    	"enrolled_2023"	INTEGER,
-    	"enrolled_2022"	INTEGER,
-    	"enrolled_2021"	INTEGER,
-    	"tbs_2024"	INTEGER,
-    	"tbs_2023"	INTEGER,
-    	"tbs_2022"	INTEGER,
-    	"tbs_2021"	INTEGER,
-    	"base_score_2024"	REAL,
-    	"base_score_2023"	REAL,
-    	"base_score_2022"	REAL,
-    	"base_score_2021"	REAL
+    	"enrolled_2024"	TEXT,
+    	"enrolled_2023"	TEXT,
+    	"enrolled_2022"	TEXT,
+    	"enrolled_2021"	TEXT,
+    	"tbs_2024"	TEXT,
+    	"tbs_2023"	TEXT,
+    	"tbs_2022"	TEXT,
+    	"tbs_2021"	TEXT,
+    	"base_score_2024"	TEXT,
+    	"base_score_2023"	TEXT,
+    	"base_score_2022"	TEXT,
+    	"base_score_2021"	TEXT
         );
     ```
