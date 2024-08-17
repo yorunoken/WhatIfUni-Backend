@@ -5,7 +5,6 @@ Backend of the calissaydim website.
 Needs a `data.db` database with five tables;
 
 ## `tytData` with schema:
-    ```sql
         CREATE TABLE "tytData" (
     	"yop_code"	TEXT,
     	"university_name"	TEXT,
@@ -25,10 +24,9 @@ Needs a `data.db` database with five tables;
     	"tbs_2024"	TEXT,
     	"tbs_2023"	TEXT
         );
-    ```
+    
 
 ## `sayData`, `sözData`, `eaData` and `dilData` with schema:
-    ```sql
         CREATE TABLE "name" (
     	"yop_code"	TEXT,
     	"university_name"	TEXT,
@@ -57,4 +55,3 @@ Needs a `data.db` database with five tables;
     	"base_score_2022"	TEXT,
     	"base_score_2021"	TEXT
         );
-    ```
