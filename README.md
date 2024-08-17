@@ -1,6 +1,6 @@
-# WhatIfUni Backend
+# calissaydim-backend
 
-Backend of the WhatIfUni website.
+Backend of the calissaydim website.
 
 Needs a `data.db` database with five tables;
 

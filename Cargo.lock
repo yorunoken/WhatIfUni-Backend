@@ -358,6 +358,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "calissaydim-backend"
+version = "0.1.0"
+dependencies = [
+ "actix-web",
+ "dotenvy",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "tokio",
+ "warp",
+]
+
+[[package]]
 name = "cc"
 version = "1.1.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2168,19 +2181,6 @@ name = "wasite"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b8dad83b4f25e74f184f64c43b150b91efe7647395b42289f38e50566d82855b"
-
-[[package]]
-name = "whatifuni-backend"
-version = "0.1.0"
-dependencies = [
- "actix-web",
- "dotenvy",
- "serde",
- "serde_json",
- "sqlx",
- "tokio",
- "warp",
-]
 
 [[package]]
 name = "whoami"
