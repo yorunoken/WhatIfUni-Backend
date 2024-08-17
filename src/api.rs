@@ -57,7 +57,7 @@ pub async fn get_ayt(
     query: HashMap<String, String>,
     pool: SqlitePool,
 ) -> Result<impl Reply, Rejection> {
-    let mut sql_query = format!("SELECT * FROM {}", exam_type);
+    let mut sql_query = format!("SELECT * FROM {}Data", exam_type);
 
     if !query.is_empty() {
         let mut conditions: Vec<String> = Vec::new();
