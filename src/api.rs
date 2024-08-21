@@ -1,3 +1,4 @@
+use std::fmt::Write;
 use std::{collections::HashMap, sync::Arc};
 
 use rosu_v2::prelude::*;
@@ -14,14 +15,23 @@ pub async fn get_tyt(
 ) -> Result<impl Reply, Rejection> {
     let mut sql_query = String::from("SELECT * FROM tytData");
 
-    if !query.is_empty() {
-        let mut conditions: Vec<String> = Vec::new();
-        for (key, value) in query {
-            conditions.push(format!("{} = '{}'", key, value))
+    let standalone_query = query.get("query");
+
+    match standalone_query {
+        Some(standalone_query) => {
+            let _ = write!(sql_query, " {}", standalone_query);
         }
-        let where_clause = conditions.join(" AND ");
-        sql_query.push_str(" WHERE ");
-        sql_query.push_str(&where_clause);
+        None => {
+            if !query.is_empty() {
+                let mut conditions: Vec<String> = Vec::new();
+                for (key, value) in query {
+                    conditions.push(format!("{} = '{}'", key, value))
+                }
+                let where_clause = conditions.join(" AND ");
+
+                let _ = write!(sql_query, " WHERE {}", where_clause);
+            }
+        }
     }
 
     let rows = sqlx::query(&sql_query)
@@ -62,14 +72,23 @@ pub async fn get_ayt(
 ) -> Result<impl Reply, Rejection> {
     let mut sql_query = format!("SELECT * FROM {}Data", exam_type);
 
-    if !query.is_empty() {
-        let mut conditions: Vec<String> = Vec::new();
-        for (key, value) in query {
-            conditions.push(format!("{} = '{}'", key, value))
+    let standalone_query = query.get("query");
+
+    match standalone_query {
+        Some(standalone_query) => {
+            let _ = write!(sql_query, " {}", standalone_query);
         }
-        let where_clause = conditions.join(" AND ");
-        sql_query.push_str(" WHERE ");
-        sql_query.push_str(&where_clause);
+        None => {
+            if !query.is_empty() {
+                let mut conditions: Vec<String> = Vec::new();
+                for (key, value) in query {
+                    conditions.push(format!("{} = '{}'", key, value))
+                }
+                let where_clause = conditions.join(" AND ");
+
+                let _ = write!(sql_query, " WHERE {}", where_clause);
+            }
+        }
     }
 
     let rows = sqlx::query(&sql_query)
