@@ -1,4 +1,7 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
+
+use rosu_v2::prelude::*;
+use rosu_v2::Osu;
 
 use sqlx::{Row, SqlitePool};
 use warp::{reject::Rejection, reply::Reply};
@@ -107,4 +110,11 @@ pub async fn get_ayt(
         .collect();
 
     Ok(warp::reply::json(&ayt))
+}
+
+pub async fn get_osu_user(user_id: u32, osu: Arc<Osu>) -> Result<impl Reply, Rejection> {
+    match osu.user(UserId::Id(user_id)).await {
+        Ok(user) => Ok(warp::reply::json(&user)),
+        Err(_) => Err(warp::reject::not_found()),
+    }
 }
