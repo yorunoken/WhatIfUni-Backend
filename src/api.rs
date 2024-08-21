@@ -4,7 +4,9 @@ use std::{collections::HashMap, sync::Arc};
 use rosu_v2::prelude::*;
 use rosu_v2::Osu;
 
-use sqlx::{Row, SqlitePool};
+use serde_json::Value;
+
+use sqlx::{Column, Row, SqlitePool};
 use warp::{reject::Rejection, reply::Reply};
 
 use crate::models::{Ayt, Tyt};
@@ -18,7 +20,9 @@ pub async fn get_tyt(
     let standalone_query = query.get("query");
 
     match standalone_query {
-        Some(standalone_query) => sql_query = standalone_query.clone(),
+        Some(standalone_query) => {
+            let _ = write!(sql_query, " {}", standalone_query);
+        }
         None => {
             if !query.is_empty() {
                 let mut conditions: Vec<String> = Vec::new();
@@ -74,7 +78,7 @@ pub async fn get_ayt(
 
     match standalone_query {
         Some(standalone_query) => {
-            sql_query = standalone_query.clone();
+            let _ = write!(sql_query, " {}", standalone_query);
         }
         None => {
             if !query.is_empty() {
@@ -127,6 +131,40 @@ pub async fn get_ayt(
         .collect();
 
     Ok(warp::reply::json(&ayt))
+}
+
+pub async fn database(
+    query: HashMap<String, String>,
+    pool: SqlitePool,
+) -> Result<impl Reply, Rejection> {
+    let standalone_query = query.get("query");
+
+    match standalone_query {
+        Some(sql_query) => {
+            let rows: Vec<sqlx::sqlite::SqliteRow> = sqlx::query(&sql_query)
+                .fetch_all(&pool)
+                .await
+                .map_err(|_| warp::reject::not_found())?;
+
+            let json_rows: Vec<Value> = rows
+                .into_iter()
+                .map(|row| {
+                    let mut map = serde_json::Map::new();
+                    for column in row.columns() {
+                        let column_name = column.name();
+                        let value: Option<String> = row.try_get(column_name).unwrap_or(None);
+                        if let Some(v) = value {
+                            map.insert(column_name.to_string(), Value::String(v));
+                        }
+                    }
+                    Value::Object(map)
+                })
+                .collect();
+
+            Ok(warp::reply::json(&json_rows))
+        }
+        None => Err(warp::reject::not_found()),
+    }
 }
 
 pub async fn get_osu_user(username: String, osu: Arc<Osu>) -> Result<impl Reply, Rejection> {

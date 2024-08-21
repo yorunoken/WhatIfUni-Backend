@@ -4,7 +4,7 @@ use rosu_v2::Osu;
 use sqlx::SqlitePool;
 use warp::{Filter, Rejection, Reply};
 
-use crate::api::{get_ayt, get_osu_user, get_tyt};
+use crate::api::{database, get_ayt, get_osu_user, get_tyt};
 
 pub fn routes(
     pool: SqlitePool,
@@ -22,12 +22,18 @@ pub fn routes(
         .and(with_db(pool.clone()))
         .and_then(get_ayt);
 
+    let query_database = warp::path!("api" / "query")
+        .and(warp::get())
+        .and(warp::query::<std::collections::HashMap<String, String>>())
+        .and(with_db(pool.clone()))
+        .and_then(database);
+
     let get_osu_user = warp::path!("api" / "osu" / "user" / String)
         .and(warp::get())
         .and(with_osu(osu.clone()))
         .and_then(get_osu_user);
 
-    get_tyt.or(get_ayt).or(get_osu_user)
+    query_database.or(get_tyt).or(get_ayt).or(get_osu_user)
 }
 
 fn with_db(
