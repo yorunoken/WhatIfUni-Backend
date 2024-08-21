@@ -18,9 +18,7 @@ pub async fn get_tyt(
     let standalone_query = query.get("query");
 
     match standalone_query {
-        Some(standalone_query) => {
-            let _ = write!(sql_query, " {}", standalone_query);
-        }
+        Some(standalone_query) => sql_query = standalone_query.clone(),
         None => {
             if !query.is_empty() {
                 let mut conditions: Vec<String> = Vec::new();
@@ -76,7 +74,7 @@ pub async fn get_ayt(
 
     match standalone_query {
         Some(standalone_query) => {
-            let _ = write!(sql_query, " {}", standalone_query);
+            sql_query = standalone_query.clone();
         }
         None => {
             if !query.is_empty() {
