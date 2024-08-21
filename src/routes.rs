@@ -22,7 +22,7 @@ pub fn routes(
         .and(with_db(pool.clone()))
         .and_then(get_ayt);
 
-    let get_osu_user = warp::path!("api" / "osu" / "user" / u32)
+    let get_osu_user = warp::path!("api" / "osu" / "user" / String)
         .and(warp::get())
         .and(with_osu(osu.clone()))
         .and_then(get_osu_user);

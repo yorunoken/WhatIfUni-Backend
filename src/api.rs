@@ -131,8 +131,10 @@ pub async fn get_ayt(
     Ok(warp::reply::json(&ayt))
 }
 
-pub async fn get_osu_user(user_id: u32, osu: Arc<Osu>) -> Result<impl Reply, Rejection> {
-    match osu.user(UserId::Id(user_id)).await {
+pub async fn get_osu_user(username: String, osu: Arc<Osu>) -> Result<impl Reply, Rejection> {
+    let small_username: SmallString<[u8; 15]> = username.into();
+
+    match osu.user(UserId::Name(small_username)).await {
         Ok(user) => Ok(warp::reply::json(&user)),
         Err(_) => Err(warp::reject::not_found()),
     }
