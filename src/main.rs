@@ -26,6 +26,11 @@ async fn main() {
 
     let api = routes::routes(pool, osu);
 
-    println!("Listening on http://localhost:3031");
-    warp::serve(api).run(([127, 0, 0, 1], 3031)).await;
+    let port: u16 = env::var("PORT")
+        .expect("Expected PORT to be defined in environment.")
+        .parse()
+        .expect("PORT is not a number!");
+
+    println!("Listening on http://localhost:{}", port);
+    warp::serve(api).run(([127, 0, 0, 1], port)).await;
 }
