@@ -1,9 +1,11 @@
 use std::fmt::Write;
 use std::{collections::HashMap, sync::Arc};
 
+use chrono::Utc;
 use rosu_v2::prelude::*;
 use rosu_v2::Osu;
 
+use serde::Deserialize;
 use sqlx::{Row, SqlitePool};
 use warp::{reject::Rejection, reply::Reply};
 
@@ -175,4 +177,32 @@ pub async fn get_osu_user(username: String, osu: Arc<Osu>) -> Result<impl Reply,
         Ok(user) => Ok(warp::reply::json(&user)),
         Err(_) => Err(warp::reject::not_found()),
     }
+}
+
+// POST endpoints
+
+#[derive(Deserialize)]
+pub struct Feedback {
+    // This needs to be from 1 to 5
+    stars: u8,
+}
+pub async fn feedback(feedback: Feedback, pool: SqlitePool) -> Result<impl Reply, Rejection> {
+    let current_date = Utc::now().format("%Y-%m-%d").to_string();
+
+    sqlx::query!(
+        "INSERT INTO feedback (stars, date) VALUES (?, ?)",
+        feedback.stars,
+        current_date
+    )
+    .execute(&pool)
+    .await
+    .map_err(|e| {
+        eprintln!("Failed to insert feedback: {:?}", e);
+        warp::reject::reject()
+    })?;
+
+    Ok(warp::reply::with_status(
+        "Feedback submitted successfully",
+        warp::http::StatusCode::CREATED,
+    ))
 }

@@ -2,14 +2,15 @@ use std::sync::Arc;
 
 use rosu_v2::Osu;
 use sqlx::SqlitePool;
-use warp::{Filter, Rejection, Reply};
+use warp::{body::json, Filter, Rejection, Reply};
 
-use crate::api::{estimate_valorant_rank, get_ayt, get_osu_user, get_tyt};
+use crate::api::{estimate_valorant_rank, feedback, get_ayt, get_osu_user, get_tyt};
 
 pub fn routes(
     pool: SqlitePool,
     osu: Arc<Osu>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    // GET routes
     let get_tyt = warp::path!("api" / "tyt")
         .and(warp::get())
         .and(warp::query::<std::collections::HashMap<String, String>>())
@@ -27,14 +28,22 @@ pub fn routes(
         .and(with_osu(osu.clone()))
         .and_then(get_osu_user);
 
-    let estimate_valorant_rank = warp::path!("api" / "valorant" / "estimate" / String)
+    let get_estimate_valorant_rank = warp::path!("api" / "valorant" / "estimate" / String)
         .and(warp::get())
         .and_then(estimate_valorant_rank);
+
+    // POST routes
+    let post_feedback = warp::path!("api" / "feedback")
+        .and(warp::post())
+        .and(json())
+        .and(with_db(pool.clone()))
+        .and_then(feedback);
 
     get_tyt
         .or(get_ayt)
         .or(get_osu_user)
-        .or(estimate_valorant_rank)
+        .or(get_estimate_valorant_rank)
+        .or(post_feedback)
 }
 
 fn with_db(
