@@ -4,9 +4,7 @@ use std::{collections::HashMap, sync::Arc};
 use rosu_v2::prelude::*;
 use rosu_v2::Osu;
 
-use serde_json::Value;
-
-use sqlx::{Column, Row, SqlitePool};
+use sqlx::{Row, SqlitePool};
 use warp::{reject::Rejection, reply::Reply};
 
 use crate::methods::ValorantRank;
@@ -18,23 +16,14 @@ pub async fn get_tyt(
 ) -> Result<impl Reply, Rejection> {
     let mut sql_query = String::from("SELECT * FROM tytData");
 
-    let standalone_query = query.get("query");
-
-    match standalone_query {
-        Some(standalone_query) => {
-            let _ = write!(sql_query, " {}", standalone_query);
+    if !query.is_empty() {
+        let mut conditions: Vec<String> = Vec::new();
+        for (key, value) in query {
+            conditions.push(format!("{} = '{}'", key, value))
         }
-        None => {
-            if !query.is_empty() {
-                let mut conditions: Vec<String> = Vec::new();
-                for (key, value) in query {
-                    conditions.push(format!("{} = '{}'", key, value))
-                }
-                let where_clause = conditions.join(" AND ");
+        let where_clause = conditions.join(" AND ");
 
-                let _ = write!(sql_query, " WHERE {}", where_clause);
-            }
-        }
+        let _ = write!(sql_query, " WHERE {}", where_clause);
     }
 
     let rows = sqlx::query(&sql_query)
@@ -75,23 +64,14 @@ pub async fn get_ayt(
 ) -> Result<impl Reply, Rejection> {
     let mut sql_query = format!("SELECT * FROM {}Data", exam_type);
 
-    let standalone_query = query.get("query");
-
-    match standalone_query {
-        Some(standalone_query) => {
-            let _ = write!(sql_query, " {}", standalone_query);
+    if !query.is_empty() {
+        let mut conditions: Vec<String> = Vec::new();
+        for (key, value) in query {
+            conditions.push(format!("{} = '{}'", key, value))
         }
-        None => {
-            if !query.is_empty() {
-                let mut conditions: Vec<String> = Vec::new();
-                for (key, value) in query {
-                    conditions.push(format!("{} = '{}'", key, value))
-                }
-                let where_clause = conditions.join(" AND ");
+        let where_clause = conditions.join(" AND ");
 
-                let _ = write!(sql_query, " WHERE {}", where_clause);
-            }
-        }
+        let _ = write!(sql_query, " WHERE {}", where_clause);
     }
 
     let rows = sqlx::query(&sql_query)
@@ -132,40 +112,6 @@ pub async fn get_ayt(
         .collect();
 
     Ok(warp::reply::json(&ayt))
-}
-
-pub async fn database(
-    query: HashMap<String, String>,
-    pool: SqlitePool,
-) -> Result<impl Reply, Rejection> {
-    let standalone_query = query.get("query");
-
-    match standalone_query {
-        Some(sql_query) => {
-            let rows: Vec<sqlx::sqlite::SqliteRow> = sqlx::query(&sql_query)
-                .fetch_all(&pool)
-                .await
-                .map_err(|_| warp::reject::not_found())?;
-
-            let json_rows: Vec<Value> = rows
-                .into_iter()
-                .map(|row| {
-                    let mut map = serde_json::Map::new();
-                    for column in row.columns() {
-                        let column_name = column.name();
-                        let value: Option<String> = row.try_get(column_name).unwrap_or(None);
-                        if let Some(v) = value {
-                            map.insert(column_name.to_string(), Value::String(v));
-                        }
-                    }
-                    Value::Object(map)
-                })
-                .collect();
-
-            Ok(warp::reply::json(&json_rows))
-        }
-        None => Err(warp::reject::not_found()),
-    }
 }
 
 pub async fn estimate_valorant_rank(rank: String) -> Result<impl Reply, Rejection> {

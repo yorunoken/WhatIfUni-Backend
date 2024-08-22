@@ -126,7 +126,6 @@ dependencies = [
  "dotenvy",
  "rosu-v2",
  "serde",
- "serde_json",
  "sqlx",
  "tokio",
  "warp",

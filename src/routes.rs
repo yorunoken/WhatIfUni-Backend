@@ -4,18 +4,12 @@ use rosu_v2::Osu;
 use sqlx::SqlitePool;
 use warp::{Filter, Rejection, Reply};
 
-use crate::api::{database, estimate_valorant_rank, get_ayt, get_osu_user, get_tyt};
+use crate::api::{estimate_valorant_rank, get_ayt, get_osu_user, get_tyt};
 
 pub fn routes(
     pool: SqlitePool,
     osu: Arc<Osu>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    let query_database = warp::path!("api" / "query")
-        .and(warp::get())
-        .and(warp::query::<std::collections::HashMap<String, String>>())
-        .and(with_db(pool.clone()))
-        .and_then(database);
-
     let get_tyt = warp::path!("api" / "tyt")
         .and(warp::get())
         .and(warp::query::<std::collections::HashMap<String, String>>())
@@ -37,8 +31,7 @@ pub fn routes(
         .and(warp::get())
         .and_then(estimate_valorant_rank);
 
-    query_database
-        .or(get_tyt)
+    get_tyt
         .or(get_ayt)
         .or(get_osu_user)
         .or(estimate_valorant_rank)
