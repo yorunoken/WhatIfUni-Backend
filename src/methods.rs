@@ -59,7 +59,7 @@ impl ValorantRank {
         }
     }
 
-    pub fn to_index(&self) -> usize {
+    pub fn to_number(&self) -> usize {
         match self {
             ValorantRank::Iron1 => 0,
             ValorantRank::Iron2 => 1,

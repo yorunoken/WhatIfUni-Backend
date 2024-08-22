@@ -139,28 +139,32 @@ pub async fn estimate_valorant_rank(rank: String) -> Result<impl Reply, Rejectio
         56836.0, 36195.0, 21824.0, 13987.0, 4140.0, 3904.0, 567.0,
     ];
 
+    let total_players: f64 = distribution_array.iter().sum();
+    let mut cumulative_distribution: Vec<f64> = Vec::with_capacity(distribution_array.len());
+    let mut sum: f64 = 0.0;
+    for &value in &distribution_array {
+        sum += value;
+        cumulative_distribution.push(sum / total_players);
+    }
+
     // https://tracker.gg/valorant/leaderboards/ranked/pc/default?page=1&region=eu&act=52ca6698-41c1-e7de-4008-8994d2221209
     let valorant_rank = ValorantRank::new(&rank.to_lowercase());
-    let index = valorant_rank.to_index();
 
-    if index >= distribution_array.len() || index + 1 >= distribution_array.len() {
+    // This ranges from 0 to 24, from bad rank to good rank
+    let valorant_rank_number = valorant_rank.to_number();
+
+    if valorant_rank_number >= distribution_array.len() {
         return Err(warp::reject::reject());
     }
 
-    let sum: f64 = distribution_array
-        .iter()
-        .skip(index + 1)
-        .take(24 - index)
-        .sum();
+    let reversed_rank_percentage = 1.0 - cumulative_distribution[valorant_rank_number];
 
-    let factor = 0.5;
-    let index_value = distribution_array.get(index).unwrap_or(&0.0);
-    let adjusted_sum = sum + (index_value * factor);
-
-    let result = adjusted_sum / 1.4;
+    let min_threshold = 0.00005; // Adjust this value as needed
+    let estimated_rank =
+        (reversed_rank_percentage * total_players).max(total_players * min_threshold) as u64;
 
     Ok(warp::reply::json(&EstimateRankResponse {
-        estimate_rank: result as u64,
+        estimate_rank: estimated_rank,
     }))
 }
 
