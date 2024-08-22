@@ -10,7 +10,7 @@ use sqlx::{Column, Row, SqlitePool};
 use warp::{reject::Rejection, reply::Reply};
 
 use crate::methods::ValorantRank;
-use crate::models::{Ayt, Tyt};
+use crate::models::{Ayt, EstimateRankResponse, Tyt};
 
 pub async fn get_tyt(
     query: HashMap<String, String>,
@@ -195,7 +195,9 @@ pub async fn estimate_valorant_rank(rank: String) -> Result<impl Reply, Rejectio
 
     let result = adjusted_sum / 1.4;
 
-    Ok(warp::reply::json(&result))
+    Ok(warp::reply::json(&EstimateRankResponse {
+        estimate_rank: result as u64,
+    }))
 }
 
 pub async fn get_osu_user(username: String, osu: Arc<Osu>) -> Result<impl Reply, Rejection> {

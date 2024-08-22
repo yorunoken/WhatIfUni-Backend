@@ -50,3 +50,8 @@ pub struct Ayt {
     pub base_score_2022: Option<String>,
     pub base_score_2021: Option<String>,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct EstimateRankResponse {
+    pub estimate_rank: u64,
+}
