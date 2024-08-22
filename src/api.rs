@@ -4,7 +4,9 @@ use std::{collections::HashMap, sync::Arc};
 use rosu_v2::prelude::*;
 use rosu_v2::Osu;
 
-use sqlx::{Row, SqlitePool};
+use serde_json::Value;
+
+use sqlx::{Column, Row, SqlitePool};
 use warp::{reject::Rejection, reply::Reply};
 
 use crate::methods::ValorantRank;
@@ -16,14 +18,23 @@ pub async fn get_tyt(
 ) -> Result<impl Reply, Rejection> {
     let mut sql_query = String::from("SELECT * FROM tytData");
 
-    if !query.is_empty() {
-        let mut conditions: Vec<String> = Vec::new();
-        for (key, value) in query {
-            conditions.push(format!("{} = '{}'", key, value))
-        }
-        let where_clause = conditions.join(" AND ");
+    let custom_query = query.get("query");
 
-        let _ = write!(sql_query, " WHERE {}", where_clause);
+    match custom_query {
+        Some(standalone_query) => {
+            let _ = write!(sql_query, " {}", standalone_query);
+        }
+        None => {
+            if !query.is_empty() {
+                let mut conditions: Vec<String> = Vec::new();
+                for (key, value) in query {
+                    conditions.push(format!("{} = '{}'", key, value))
+                }
+                let where_clause = conditions.join(" AND ");
+
+                let _ = write!(sql_query, " WHERE {}", where_clause);
+            }
+        }
     }
 
     let rows = sqlx::query(&sql_query)
@@ -64,14 +75,23 @@ pub async fn get_ayt(
 ) -> Result<impl Reply, Rejection> {
     let mut sql_query = format!("SELECT * FROM {}Data", exam_type);
 
-    if !query.is_empty() {
-        let mut conditions: Vec<String> = Vec::new();
-        for (key, value) in query {
-            conditions.push(format!("{} = '{}'", key, value))
-        }
-        let where_clause = conditions.join(" AND ");
+    let custom_query = query.get("query");
 
-        let _ = write!(sql_query, " WHERE {}", where_clause);
+    match custom_query {
+        Some(standalone_query) => {
+            let _ = write!(sql_query, " {}", standalone_query);
+        }
+        None => {
+            if !query.is_empty() {
+                let mut conditions: Vec<String> = Vec::new();
+                for (key, value) in query {
+                    conditions.push(format!("{} = '{}'", key, value))
+                }
+                let where_clause = conditions.join(" AND ");
+
+                let _ = write!(sql_query, " WHERE {}", where_clause);
+            }
+        }
     }
 
     let rows = sqlx::query(&sql_query)
