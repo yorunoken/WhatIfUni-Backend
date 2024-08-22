@@ -4,9 +4,7 @@ use std::{collections::HashMap, sync::Arc};
 use rosu_v2::prelude::*;
 use rosu_v2::Osu;
 
-use serde_json::Value;
-
-use sqlx::{Column, Row, SqlitePool};
+use sqlx::{Row, SqlitePool};
 use warp::{reject::Rejection, reply::Reply};
 
 use crate::methods::ValorantRank;
