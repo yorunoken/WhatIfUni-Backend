@@ -6,6 +6,7 @@ use rosu_v2::prelude::*;
 
 mod api;
 mod database;
+mod methods;
 mod models;
 mod routes;
 

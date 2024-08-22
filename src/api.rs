@@ -9,6 +9,7 @@ use serde_json::Value;
 use sqlx::{Column, Row, SqlitePool};
 use warp::{reject::Rejection, reply::Reply};
 
+use crate::methods::ValorantRank;
 use crate::models::{Ayt, Tyt};
 
 pub async fn get_tyt(
@@ -165,6 +166,36 @@ pub async fn database(
         }
         None => Err(warp::reject::not_found()),
     }
+}
+
+pub async fn estimate_valorant_rank(rank: String) -> Result<impl Reply, Rejection> {
+    let distribution_array: Vec<f64> = vec![
+        35251.0, 93687.0, 206510.0, 225147.0, 300778.0, 266653.0, 318142.0, 279157.0, 283079.0,
+        279748.0, 237958.0, 205472.0, 186473.0, 150596.0, 132228.0, 122509.0, 95984.0, 74587.0,
+        56836.0, 36195.0, 21824.0, 13987.0, 4140.0, 3904.0, 567.0,
+    ];
+
+    // https://tracker.gg/valorant/leaderboards/ranked/pc/default?page=1&region=eu&act=52ca6698-41c1-e7de-4008-8994d2221209
+    let valorant_rank = ValorantRank::new(&rank.to_lowercase());
+    let index = valorant_rank.to_index();
+
+    if index >= distribution_array.len() || index + 1 >= distribution_array.len() {
+        return Err(warp::reject::reject());
+    }
+
+    let sum: f64 = distribution_array
+        .iter()
+        .skip(index + 1)
+        .take(24 - index)
+        .sum();
+
+    let factor = 0.5;
+    let index_value = distribution_array.get(index).unwrap_or(&0.0);
+    let adjusted_sum = sum + (index_value * factor);
+
+    let result = adjusted_sum / 1.4;
+
+    Ok(warp::reply::json(&result))
 }
 
 pub async fn get_osu_user(username: String, osu: Arc<Osu>) -> Result<impl Reply, Rejection> {
