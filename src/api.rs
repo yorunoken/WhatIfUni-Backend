@@ -142,12 +142,6 @@ pub async fn estimate_valorant_rank(rank: String) -> Result<impl Reply, Rejectio
     ];
 
     let total_players: f64 = distribution_array.iter().sum();
-    let mut cumulative_distribution: Vec<f64> = Vec::with_capacity(distribution_array.len());
-    let mut sum: f64 = 0.0;
-    for &value in &distribution_array {
-        sum += value;
-        cumulative_distribution.push(sum / total_players);
-    }
 
     // https://tracker.gg/valorant/leaderboards/ranked/pc/default?page=1&region=eu&act=52ca6698-41c1-e7de-4008-8994d2221209
     let valorant_rank = ValorantRank::new(&rank.to_lowercase());
@@ -159,14 +153,20 @@ pub async fn estimate_valorant_rank(rank: String) -> Result<impl Reply, Rejectio
         return Err(warp::reject::reject());
     }
 
-    let reversed_rank_percentage = 1.0 - cumulative_distribution[valorant_rank_number];
+    let players_above: f64 = distribution_array
+        .iter()
+        .skip(valorant_rank_number + 1)
+        .sum();
 
-    let min_threshold = 0.00005; // Adjust this value as needed
-    let estimated_rank =
-        (reversed_rank_percentage * total_players).max(total_players * min_threshold) as u64;
+    let players_at_rank = distribution_array[valorant_rank_number];
+
+    let percentile = (players_above + (players_at_rank / 2.0)) / total_players;
+
+    let estimated_rank = (percentile * total_players).round() as u64 + 1; // Add 1 to avoid rank 0
 
     Ok(warp::reply::json(&EstimateRankResponse {
-        estimate_rank: estimated_rank,
+        // Divide by 2 halve the rank, because I feel like it fits better that way
+        estimate_rank: estimated_rank / 2,
     }))
 }
 
