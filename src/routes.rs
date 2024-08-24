@@ -4,7 +4,9 @@ use rosu_v2::Osu;
 use sqlx::SqlitePool;
 use warp::{body::json, Filter, Rejection, Reply};
 
-use crate::api::{estimate_valorant_rank, feedback, get_ayt, get_osu_user, get_tyt};
+use crate::api::{
+    estimate_cs2_rank, estimate_valorant_rank, feedback, get_ayt, get_osu_user, get_tyt,
+};
 
 pub fn routes(
     pool: SqlitePool,
@@ -28,9 +30,13 @@ pub fn routes(
         .and(with_osu(osu.clone()))
         .and_then(get_osu_user);
 
-    let get_estimate_valorant_rank = warp::path!("api" / "valorant" / "estimate" / String)
+    let get_estimate_valorant_rank = warp::path!("api" / "estimate" / "valorant" / String)
         .and(warp::get())
         .and_then(estimate_valorant_rank);
+
+    let get_estimate_cs2_rank = warp::path!("api" / "estimate" / "cs2" / usize)
+        .and(warp::get())
+        .and_then(estimate_cs2_rank);
 
     // POST routes
     let post_feedback = warp::path!("api" / "feedback")
@@ -43,6 +49,7 @@ pub fn routes(
         .or(get_ayt)
         .or(get_osu_user)
         .or(get_estimate_valorant_rank)
+        .or(get_estimate_cs2_rank)
         .or(post_feedback)
 }
 

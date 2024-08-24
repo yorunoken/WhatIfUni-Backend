@@ -1,5 +1,4 @@
-use std::fmt::Write;
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, f64::consts::E, fmt::Write, sync::Arc};
 
 use chrono::Utc;
 use rosu_v2::prelude::*;
@@ -167,6 +166,25 @@ pub async fn estimate_valorant_rank(rank: String) -> Result<impl Reply, Rejectio
     Ok(warp::reply::json(&EstimateRankResponse {
         // Divide by 2 halve the rank, because I feel like it fits better that way
         estimate_rank: estimated_rank / 2,
+    }))
+}
+
+pub async fn estimate_cs2_rank(elo: usize) -> Result<impl Reply, Rejection> {
+    const BASE_ELO: usize = 1000;
+    const DECAY_RATE: f64 = 0.0004;
+
+    let total_yks = 2819362.0;
+
+    let normalized_elo = (elo - BASE_ELO).max(0);
+
+    let percentile = 100.0 * E.powf(-DECAY_RATE * normalized_elo as f64);
+    let rank_position = ((percentile / 100.0) * total_yks).round() as u64;
+
+    println!("elo: {elo}");
+    println!("percentile: %{percentile}");
+
+    Ok(warp::reply::json(&EstimateRankResponse {
+        estimate_rank: rank_position,
     }))
 }
 
