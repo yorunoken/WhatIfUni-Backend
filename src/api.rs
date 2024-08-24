@@ -180,9 +180,6 @@ pub async fn estimate_cs2_rank(elo: usize) -> Result<impl Reply, Rejection> {
     let percentile = 100.0 * E.powf(-DECAY_RATE * normalized_elo as f64);
     let rank_position = ((percentile / 100.0) * total_yks).round() as u64;
 
-    println!("elo: {elo}");
-    println!("percentile: %{percentile}");
-
     Ok(warp::reply::json(&EstimateRankResponse {
         estimate_rank: rank_position,
     }))
