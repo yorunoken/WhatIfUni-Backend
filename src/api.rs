@@ -39,7 +39,10 @@ pub async fn get_tyt(
     let rows = sqlx::query(&sql_query)
         .fetch_all(&pool)
         .await
-        .map_err(|_| warp::reject::not_found())?;
+        .map_err(|e| {
+            eprintln!("failed to get tyt query: {e}");
+            warp::reject::not_found()
+        })?;
 
     let tyt: Vec<Tyt> = rows
         .into_iter()
@@ -96,7 +99,10 @@ pub async fn get_ayt(
     let rows = sqlx::query(&sql_query)
         .fetch_all(&pool)
         .await
-        .map_err(|_| warp::reject::not_found())?;
+        .map_err(|e| {
+            eprintln!("error while getting ayt query: {e}");
+            warp::reject::not_found()
+        })?;
 
     let ayt: Vec<Ayt> = rows
         .into_iter()
@@ -149,6 +155,7 @@ pub async fn estimate_valorant_rank(rank: String) -> Result<impl Reply, Rejectio
     let valorant_rank_number = valorant_rank.to_number();
 
     if valorant_rank_number >= distribution_array.len() {
+        println!("valorant_rank_number is bigger than array length.");
         return Err(warp::reject::reject());
     }
 
@@ -190,7 +197,10 @@ pub async fn get_osu_user(username: String, osu: Arc<Osu>) -> Result<impl Reply,
 
     match osu.user(UserId::Name(small_username)).await {
         Ok(user) => Ok(warp::reply::json(&user)),
-        Err(_) => Err(warp::reject::not_found()),
+        Err(e) => {
+            eprintln!("osu! api error: {}", e);
+            Err(warp::reject::not_found())
+        }
     }
 }
 
