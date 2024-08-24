@@ -59,6 +59,6 @@ Needs a `data.db` database with five tables;
 ## `feedback` with schema:
         CREATE TABLE "feedback" (
         "stars"	INTEGER NOT NULL,
-        "date"	TEXT NOT NULL,
         "game"	TEXT NOT NULL
+        "date"	TEXT NOT NULL,
         );
