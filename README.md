@@ -24,7 +24,7 @@ Needs a `data.db` database with five tables;
     	"tbs_2024"	TEXT,
     	"tbs_2023"	TEXT
         );
-    
+
 
 ## `sayData`, `sözData`, `eaData` and `dilData` with schema:
         CREATE TABLE "name" (
@@ -54,4 +54,11 @@ Needs a `data.db` database with five tables;
     	"base_score_2023"	TEXT,
     	"base_score_2022"	TEXT,
     	"base_score_2021"	TEXT
+        );
+
+## `feedback` with schema:
+        CREATE TABLE "feedback" (
+        "stars"	INTEGER NOT NULL,
+        "date"	TEXT NOT NULL,
+        "game"	TEXT NOT NULL
         );

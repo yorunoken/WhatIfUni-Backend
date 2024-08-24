@@ -200,14 +200,16 @@ pub async fn get_osu_user(username: String, osu: Arc<Osu>) -> Result<impl Reply,
 pub struct Feedback {
     // This needs to be from 1 to 5
     stars: u8,
+    game: String,
 }
 pub async fn feedback(feedback: Feedback, pool: SqlitePool) -> Result<impl Reply, Rejection> {
     let current_date = Utc::now().format("%Y-%m-%d").to_string();
 
     sqlx::query!(
-        "INSERT INTO feedback (stars, date) VALUES (?, ?)",
+        "INSERT INTO feedback (stars, game, date) VALUES (?, ?, ?)",
         feedback.stars,
-        current_date
+        feedback.game,
+        current_date,
     )
     .execute(&pool)
     .await
