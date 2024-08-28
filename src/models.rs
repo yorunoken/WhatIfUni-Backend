@@ -55,3 +55,10 @@ pub struct Ayt {
 pub struct EstimateRankResponse {
     pub estimate_rank: u64,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct OsuResponse {
+    pub rank: Option<u32>,
+    pub username: String,
+    pub percentage: Option<f32>,
+}

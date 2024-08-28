@@ -9,7 +9,11 @@ use sqlx::{Row, SqlitePool};
 use warp::{reject::Rejection, reply::Reply};
 
 use crate::methods::ValorantRank;
+use crate::models::OsuResponse;
 use crate::models::{Ayt, EstimateRankResponse, Tyt};
+
+const TOTAL_OSU: u32 = 1_000_000;
+const TOTAL_YKS: u32 = 2_819_362;
 
 pub async fn get_tyt(
     query: HashMap<String, String>,
@@ -180,12 +184,13 @@ pub async fn estimate_cs2_rank(elo: usize) -> Result<impl Reply, Rejection> {
     const BASE_ELO: usize = 1000;
     const DECAY_RATE: f64 = 0.0004;
 
-    let total_yks = 2819362.0;
-
     let normalized_elo = (elo - BASE_ELO).max(0);
 
+    // Implementation of percentile below
+    // https://www.desmos.com/calculator/8lpthjvbni
     let percentile = 100.0 * E.powf(-DECAY_RATE * normalized_elo as f64);
-    let rank_position = ((percentile / 100.0) * total_yks).round() as u64;
+
+    let rank_position = ((percentile / 100.0) * TOTAL_YKS as f64).round() as u64;
 
     Ok(warp::reply::json(&EstimateRankResponse {
         estimate_rank: rank_position,
@@ -196,7 +201,30 @@ pub async fn get_osu_user(username: String, osu: Arc<Osu>) -> Result<impl Reply,
     let small_username: SmallString<[u8; 15]> = username.into();
 
     match osu.user(UserId::Name(small_username)).await {
-        Ok(user) => Ok(warp::reply::json(&user)),
+        Ok(user) => match &user.statistics {
+            Some(statistics) => match statistics.global_rank {
+                Some(global_rank) => {
+                    let percentage = global_rank as f32 / TOTAL_OSU as f32;
+                    let new_rank = (percentage * TOTAL_YKS as f32).round() as u32;
+
+                    Ok(warp::reply::json(&OsuResponse {
+                        percentage: Some(percentage * 100.0), // multiply by 100 so you get a 100 based percentage, x.xx%
+                        rank: Some(new_rank),
+                        username: user.username.into_string(),
+                    }))
+                }
+                None => Ok(warp::reply::json(&OsuResponse {
+                    percentage: None,
+                    rank: None,
+                    username: user.username.into_string(),
+                })),
+            },
+            None => Ok(warp::reply::json(&OsuResponse {
+                percentage: None,
+                rank: None,
+                username: user.username.into_string(),
+            })),
+        },
         Err(e) => {
             eprintln!("osu! api error: {}", e);
             Err(warp::reject::not_found())
